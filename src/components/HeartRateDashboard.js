@@ -11,6 +11,21 @@ const processHeartRateData = (data, selectedDate) => {
     return [];
   }
 
+  if (selectedDate === "all") {
+    return data.flatMap(entry =>
+      entry.heart_rate?.heartRateValues?.map(([timestamp, heartRate]) => ({
+        timestamp: new Date(timestamp).toLocaleString("en-US", {
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
+        heartRate,
+        highlight: heartRate > 120,
+      })) || []
+    );
+  }
+
   let selectedData = data.find(entry => entry.date === selectedDate);
   if (!selectedData) return [];
 
@@ -42,6 +57,7 @@ const DateSelector = ({ selectedDate, setSelectedDate }) => (
     value={selectedDate}
     onChange={(e) => setSelectedDate(e.target.value)}
   >
+    <option value="all">All Dates</option>
     {heartRateData.map(entry => (
       <option key={entry.date} value={entry.date}>{entry.date}</option>
     ))}
@@ -49,29 +65,26 @@ const DateSelector = ({ selectedDate, setSelectedDate }) => (
 );
 
 const HeartRateDashboard = () => {
-  const [selectedDate, setSelectedDate] = useState(heartRateData[0]?.date || "");
+  const [selectedDate, setSelectedDate] = useState("all");
   const formattedData = processHeartRateData(heartRateData, selectedDate);
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Heart Rate Analysis - {selectedDate} 
+        <h2 className="text-2xl font-bold">Heart Rate Analysis</h2>
         <DateSelector selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
-        </h2>
       </div>
 
       <Card className="mb-6 p-4">
         <CardContent>
-          <p className="text-lg">Max HR: {formattedData.length > 0 ? heartRateData.find(d => d.date === selectedDate)?.heart_rate?.maxHeartRate || "N/A" : "N/A"} bpm</p>
-          <p className="text-lg">Min HR: {formattedData.length > 0 ? heartRateData.find(d => d.date === selectedDate)?.heart_rate?.minHeartRate || "N/A" : "N/A"} bpm</p>
-          <p className="text-lg">Resting HR: {formattedData.length > 0 ? heartRateData.find(d => d.date === selectedDate)?.heart_rate?.restingHeartRate || "N/A" : "N/A"} bpm</p>
-          <p className="text-lg">7-Day Avg Resting HR: {formattedData.length > 0 ? heartRateData.find(d => d.date === selectedDate)?.heart_rate?.lastSevenDaysAvgRestingHeartRate || "N/A" : "N/A"} bpm</p>
+          <p className="text-lg">Max HR: {formattedData.length > 0 ? Math.max(...formattedData.map(d => d.heartRate)) || "N/A" : "N/A"} bpm</p>
+          <p className="text-lg">Min HR: {formattedData.length > 0 ? Math.min(...formattedData.map(d => d.heartRate)) || "N/A" : "N/A"} bpm</p>
         </CardContent>
       </Card>
 
       {formattedData.length > 0 ? (
         <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={formattedData}>
+          <LineChart data={formattedData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))}>
             <XAxis 
               dataKey="timestamp" 
               angle={-45} 
@@ -84,7 +97,7 @@ const HeartRateDashboard = () => {
             <Line 
               type="step" 
               dataKey="heartRate" 
-              stroke="green" 
+              stroke="#3182CE" 
               strokeWidth={2} 
               dot={(data) => data.heartRate > 120 ? { r: 5, fill: "red" } : false}
             />
