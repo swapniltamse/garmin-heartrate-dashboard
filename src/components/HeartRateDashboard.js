@@ -1,10 +1,9 @@
-import React from "react";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, Scatter } from "recharts";
+import React, { useState } from "react";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 import { Card, CardContent } from "../components/ui/card"; 
 import heartRateData from "../data/heartRateData.json"; // Importing JSON data
 
-// Extract and format heart rate data
-const processHeartRateData = (data) => {
+const processHeartRateData = (data, selectedDate) => {
   console.log("Raw JSON Data:", data);
 
   if (!Array.isArray(data) || data.length === 0) {
@@ -12,71 +11,88 @@ const processHeartRateData = (data) => {
     return [];
   }
 
+  let selectedData = data.find(entry => entry.date === selectedDate);
+  if (!selectedData) return [];
+
   let allHeartRateValues = [];
 
-  data.forEach((entry) => {
-    if (entry.heart_rate && entry.heart_rate.heartRateValues) {
-      entry.heart_rate.heartRateValues.forEach(([timestamp, heartRate]) => {
-        allHeartRateValues.push({
-          timestamp: new Date(timestamp).toLocaleString("en-US", {
-            // year: "numeric",
-            month: "short",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-          }),
-          heartRate,
-          highlight: heartRate > 120 ? heartRate : null, // Identify values above threshold
-        });
+  if (selectedData.heart_rate && selectedData.heart_rate.heartRateValues) {
+    selectedData.heart_rate.heartRateValues.forEach(([timestamp, heartRate]) => {
+      allHeartRateValues.push({
+        timestamp: new Date(timestamp).toLocaleString("en-US", {
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
+        heartRate,
+        highlight: heartRate > 120,
       });
-    }
-  });
+    });
+  }
 
-  allHeartRateValues.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)); // Sort data in ascending order
+  allHeartRateValues.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
   console.log("Processed Heart Rate Data (Sorted):", allHeartRateValues);
   return allHeartRateValues;
 };
 
-const formattedData = processHeartRateData(heartRateData);
-const highlightPoints = formattedData.filter(d => d.highlight !== undefined); // Ensure we have data for highlighting
-console.log("Highlight Points:", highlightPoints);
+const DateSelector = ({ selectedDate, setSelectedDate }) => (
+  <select
+    className="p-2 border rounded"
+    value={selectedDate}
+    onChange={(e) => setSelectedDate(e.target.value)}
+  >
+    {heartRateData.map(entry => (
+      <option key={entry.date} value={entry.date}>{entry.date}</option>
+    ))}
+  </select>
+);
 
 const HeartRateDashboard = () => {
+  const [selectedDate, setSelectedDate] = useState(heartRateData[0]?.date || "");
+  const formattedData = processHeartRateData(heartRateData, selectedDate);
+
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold mb-4">Heart Rate Analysis - {Array.isArray(heartRateData) ? heartRateData[0]?.date : "No Data"}</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">Heart Rate Analysis - {selectedDate} 
+        <DateSelector selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
+        </h2>
+      </div>
 
       <Card className="mb-6 p-4">
         <CardContent>
-          <p className="text-lg">Max HR: {heartRateData[0]?.heart_rate?.maxHeartRate || "N/A"} bpm</p>
-          <p className="text-lg">Min HR: {heartRateData[0]?.heart_rate?.minHeartRate || "N/A"} bpm</p>
-          <p className="text-lg">Resting HR: {heartRateData[0]?.heart_rate?.restingHeartRate || "N/A"} bpm</p>
-          <p className="text-lg">7-Day Avg Resting HR: {heartRateData[0]?.heart_rate?.lastSevenDaysAvgRestingHeartRate || "N/A"} bpm</p>
+          <p className="text-lg">Max HR: {formattedData.length > 0 ? heartRateData.find(d => d.date === selectedDate)?.heart_rate?.maxHeartRate || "N/A" : "N/A"} bpm</p>
+          <p className="text-lg">Min HR: {formattedData.length > 0 ? heartRateData.find(d => d.date === selectedDate)?.heart_rate?.minHeartRate || "N/A" : "N/A"} bpm</p>
+          <p className="text-lg">Resting HR: {formattedData.length > 0 ? heartRateData.find(d => d.date === selectedDate)?.heart_rate?.restingHeartRate || "N/A" : "N/A"} bpm</p>
+          <p className="text-lg">7-Day Avg Resting HR: {formattedData.length > 0 ? heartRateData.find(d => d.date === selectedDate)?.heart_rate?.lastSevenDaysAvgRestingHeartRate || "N/A" : "N/A"} bpm</p>
         </CardContent>
       </Card>
 
       {formattedData.length > 0 ? (
-        <ResponsiveContainer width="100%" height={500}>
+        <ResponsiveContainer width="100%" height={300}>
           <LineChart data={formattedData}>
-            {/* <XAxis dataKey="timestamp" angle={-45} textAnchor="end" height={50} /> */}
             <XAxis 
               dataKey="timestamp" 
-              angle={-15} 
+              angle={-45} 
               textAnchor="end" 
               height={80} 
-              interval={Math.ceil(formattedData.length / 6)} // Reduce the number of timestamps shown
+              interval={Math.ceil(formattedData.length / 6)}
             />
-            <YAxis domain={[40, 150]} />
+            <YAxis domain={[10, 130]} />
             <Tooltip />
-            <Line type= "monotone" dataKey="heartRate" stroke="#3182CE" strokeWidth={1.5} dot= {false} />
+            <Line 
+              type="step" 
+              dataKey="heartRate" 
+              stroke="green" 
+              strokeWidth={2} 
+              dot={(data) => data.heartRate > 120 ? { r: 5, fill: "red" } : false}
+            />
             <ReferenceLine y={120} stroke="red" strokeDasharray="3 3" label="Threshold 120 bpm" />
-            {/* <Scatter data={formattedData} dataKey="aboveThreshold" fill="red" shape="circle" /> */}
-            <Scatter data={formattedData.filter(d => d.highlight)} dataKey="highlight" fill="red" shape="pentagon" />
           </LineChart>
-        </ResponsiveContainer>  
+        </ResponsiveContainer>
       ) : (
-        <p className="text-center text-red-500">No heart rate data available</p>
+        <p className="text-center text-red-500">No heart rate data available for the selected date</p>
       )}
     </div>
   );
