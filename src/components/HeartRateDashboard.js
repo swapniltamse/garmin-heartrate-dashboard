@@ -69,10 +69,10 @@ const HeartRateDashboard = () => {
             />
             <YAxis domain={[40, 150]} />
             <Tooltip />
-            <Line type="monotone" dataKey="heartRate" stroke="#3182CE" strokeWidth={1} dot={{ r: 2 }} />
+            <Line type= "monotone" dataKey="heartRate" stroke="#3182CE" strokeWidth={1.5} dot= {false} />
             <ReferenceLine y={120} stroke="red" strokeDasharray="3 3" label="Threshold 120 bpm" />
             {/* <Scatter data={formattedData} dataKey="aboveThreshold" fill="red" shape="circle" /> */}
-            <Scatter data={formattedData.filter(d => d.highlight)} dataKey="highlight" fill="red" shape="circle" />
+            <Scatter data={formattedData.filter(d => d.highlight)} dataKey="highlight" fill="red" shape="pentagon" />
           </LineChart>
         </ResponsiveContainer>  
       ) : (
