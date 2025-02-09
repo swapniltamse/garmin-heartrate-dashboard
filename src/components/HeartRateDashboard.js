@@ -87,7 +87,7 @@ const HeartRateDashboard = () => {
           <LineChart data={formattedData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))}>
             <XAxis 
               dataKey="timestamp" 
-              angle={-45} 
+              angle={-25} 
               textAnchor="end" 
               height={80} 
               interval={Math.ceil(formattedData.length / 6)}
