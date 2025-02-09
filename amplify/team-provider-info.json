@@ -1,0 +1,23 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-garminheartrate-dev-5dc33-authRole",
+      "UnauthRoleArn": "arn:aws:iam::600627339372:role/amplify-garminheartrate-dev-5dc33-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::600627339372:role/amplify-garminheartrate-dev-5dc33-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-garminheartrate-dev-5dc33-deployment",
+      "UnauthRoleName": "amplify-garminheartrate-dev-5dc33-unauthRole",
+      "StackName": "amplify-garminheartrate-dev-5dc33",
+      "StackId": "arn:aws:cloudformation:us-east-1:600627339372:stack/amplify-garminheartrate-dev-5dc33/26535c00-e689-11ef-964b-12ae526744a1",
+      "AmplifyAppId": "d3m8l4s7jbaowf"
+    },
+    "categories": {
+      "hosting": {
+        "amplifyhosting": {
+          "appId": "d3m8l4s7jbaowf",
+          "type": "cicd"
+        }
+      }
+    }
+  }
+}
