@@ -95,7 +95,7 @@ const HeartRateDashboard = () => {
             <YAxis domain={[10, 150]} />
             <Tooltip />
             <Line 
-              type="step" 
+              type="monotone" 
               dataKey="heartRate" 
               stroke="#3182CE" 
               strokeWidth={2} 
