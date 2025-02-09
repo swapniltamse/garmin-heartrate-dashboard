@@ -92,7 +92,7 @@ const HeartRateDashboard = () => {
               height={80} 
               interval={Math.ceil(formattedData.length / 6)}
             />
-            <YAxis domain={[10, 130]} />
+            <YAxis domain={[10, 150]} />
             <Tooltip />
             <Line 
               type="step" 
