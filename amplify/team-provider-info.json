@@ -17,6 +17,9 @@
           "appId": "d3m8l4s7jbaowf",
           "type": "cicd"
         }
+      },
+      "auth": {
+        "garminheartrate46e93bb4": {}
       }
     }
   }
